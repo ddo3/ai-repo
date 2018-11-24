@@ -3,6 +3,7 @@ import csv
 from scipy.special import comb
 import numpy as np
 from random import shuffle
+import random
 from typing import List, Tuple
 import math
 
@@ -280,6 +281,9 @@ petal_length = []
 petal_width = []
 species_data = []
 
+def print_list(data: list) -> None:
+    for item in data:
+        print(item)
 
 def get_data_from_file() -> None:
 
@@ -294,8 +298,9 @@ def get_data_from_file() -> None:
             petal_length.append(row['petal_length'])
             species_data.append(row['species'])
 
+    #print_list(petal_width)
 
-def plot_cluster(cluster_x: List, cluster_y: List, cluster_assign: List, title: str) -> None:
+def plot_cluster(cluster_x: list, cluster_y: list, cluster_assign: list, title: str) -> None:
     plt.figure(1)
 
     for i in range(0, len(petal_length)):
@@ -316,10 +321,19 @@ def plot_cluster(cluster_x: List, cluster_y: List, cluster_assign: List, title: 
     plt.show()
 
 def distance(x1: float, y1: float, x2: float, y2: float) -> float:
-    dist = np.sqrt( np.power((x2 - x1), 2) + np.power((y2 - y1), 2) )
+
+    #print(type(x1))
+    #print(type(x2))
+    term1 = np.power(x2 - x1, 2)
+    term2 = np.power(y2 - y1, 2)
+
+    addition  = term1 + term2
+
+    dist = math.sqrt(  addition  )
+
     return np.absolute(dist)
 
-def plot_with_mean_points(mean_x: list, mean_y: list, title:str) -> None:
+def plot_with_mean_points(mean_x: list, mean_y: list, title: str) -> None:
 
     #plot the data
     plt.plot(petal_length, petal_width, 'o')
@@ -330,56 +344,63 @@ def plot_with_mean_points(mean_x: list, mean_y: list, title:str) -> None:
 
     plt.show()
 
-
 def check_if_need_to_loop(cluster_assign_1: list, cluster_assign_2: list) -> bool:
     for i in range(0, len(cluster_assign_1)):
         if(cluster_assign_1[i] != cluster_assign_2[i]):
-            return False
+            print(cluster_assign_1[i])
+            print(cluster_assign_2[i])
+            return True
 
-    return True
+    return False
 
+
+#SOMEHOW this method is failing
+#or my placement is just wrong 
 def update_cluster_mean( mean_list: list, data_list: list, cluster_assign_list: list) -> List:
 
     new_mean_list = []
 
     for i in range(0, len(mean_list)):
-        counter = 0
+        count = 0
         sum = 0
 
-        for j in range(0, len(cluster_assign_list)):
-            if(cluster_assign_list[j] == i):
-                sum = sum + data_list[j]
+        for j in range(0, len(data_list)):
+            if( int(cluster_assign_list[j]) == i):
+                count = count + 1
+                sum = sum + float(data_list[j])
 
-        new_mean_list.append( sum / counter)
+        new_mean_list.append( sum / count)
 
 
     return new_mean_list
 
+
+#TODO something is wrong the means are never changing!!!
 def kmeans(k: int) -> None:
-    means_x = [] #length
-    means_y = [] #width
+    init_means_x = [] #length
+    init_means_y = [] #width
+
     #select k points at random
     for i in range(0, k):
         rand = random.randint(1,len(petal_length))
-        rand_y = random.randint(1,len(petal_length))
 
-        means_x.append(petal_length[rand])
-        means_y.append(petal_width[rand])
+        init_means_x.append(petal_length[rand])
+        init_means_y.append(petal_width[rand])
 
-    #TODO PLOT These points
-    plot_with_mean_points(means_x, means_y, "Initial Means")
+    #PLOT These points
+    plot_with_mean_points(init_means_x, init_means_y, "Initial Means")
+
     #Calculate the distance between each data point and cluster centers.
-
     distances_from_clusters = {}
 
     for i in range(0, k):
         distance_list = []
         for j in range(0,len(petal_length)):
-            x1 = petal_length[j]
-            x2 = means_x[i]
+            x1 = float(petal_length[j])
+            x2 = float(init_means_x[i])
 
-            y1 = petal_width[j]
-            y2 = means_y[i]
+            y1 = float(petal_width[j])
+            y2 = float(init_means_y[i])
 
             distance_list.append(distance(x1, y1, x2 ,y2))
 
@@ -404,22 +425,82 @@ def kmeans(k: int) -> None:
                 index = j
 
 
-        cluster_assign.appned((index)) #0, 1, 2
+        cluster_assign.append((index)) #0, 1, 2
 
-    #all things assigned to cluster 1 will be in one calcualtion
+    ##############################################################################
 
-    new_cluster_assign = [0] * len(cluster_assign)
-    old_cluster_assign = cluster_assign
+    #Calculate a new cluster mean
+    new_cluster_assign = []
+
+    #recalcualte new clusters (update x mean and y_mean)
+    new_means_x = update_cluster_mean(init_means_x, petal_length, cluster_assign)
+    new_means_y = update_cluster_mean(init_means_y, petal_width, cluster_assign)
+
+    dist_from_clusters = {}
+    #calcualte distance from clusters all other points
+    for i in range(0, k):
+        distance_list = []
+        for j in range(0,len(petal_length)):
+            x1 = float(petal_length[j])
+            x2 = float(new_means_x[i])
+
+            y1 = float(petal_width[j])
+            y2 = float(new_means_y[i])
+
+            distance_list.append(distance(x1, y1, x2 ,y2))
+
+        dist_from_clusters[i] = distance_list
+
+    #assign data points to new clusters
+    for i in range(0, len(petal_length)):
+        cluster_distances_for_i = []
+
+        #get the distances for this point
+        for key in distances_from_clusters:
+            dist_list = distances_from_clusters[key]
+            cluster_distances_for_i.append( dist_list[i] )
+
+        index = 0
+        min = cluster_distances_for_i[0]
+
+        for j in range(0, len(cluster_distances_for_i)):
+            if cluster_distances_for_i[j] < min:
+                index = j
+
+
+        new_cluster_assign.append((index)) #0, 1, 2
+
+    #
     count = 0
-    while(check_if_need_to_loop(new_cluster_assign, old_cluster_assign)):
-        print(count)
-        count++
 
+    #print("### Old cluster ###")
+    #print(old_cluster_assign)
+    #print("### new cluster ###")
+    #print(new_cluster_assign)
+    old_cluster_assign = cluster_assign
+    old_mean_x = init_means_x
+    old_means_y = init_means_y
+
+    #print(old_cluster_assign)
+    #print(new_cluster_assign)
+
+    while(check_if_need_to_loop(new_means_x, old_mean_x)):
+    #while(check_if_need_to_loop(new_cluster_assign, old_cluster_assign)):
         old_cluster_assign = new_cluster_assign
+        old_means_x = new_means_x
+        old_means_y = new_means_y
+
+
+        #print(count)
+        if(count % 100 == 0):
+            plot_with_mean_points(new_means_x, new_means_y, "test Means")
+        count = count + 1
 
         #recalcualte new clusters (update x mean and y_mean)
-        means_x = update_cluster_mean(means_x, petal_length, new_cluster_assign)
-        means_y = update_cluster_mean(means_y, petal_width, new_cluster_assign)
+        new_means_x = update_cluster_mean(old_means_x, petal_length, new_cluster_assign)
+        new_means_y = update_cluster_mean(old_means_y, petal_width, new_cluster_assign)
+
+        #old_cluster_assign = new_cluster_assign
 
         #
         dist_from_clusters = {}
@@ -428,11 +509,11 @@ def kmeans(k: int) -> None:
         for i in range(0, k):
             distance_list = []
             for j in range(0,len(petal_length)):
-                x1 = petal_length[j]
-                x2 = means_x[i]
+                x1 = float(petal_length[j])
+                x2 = float(new_means_x[i])
 
-                y1 = petal_width[j]
-                y2 = means_y[i]
+                y1 = float(petal_width[j])
+                y2 = float(new_means_y[i])
 
                 distance_list.append(distance(x1, y1, x2 ,y2))
 
@@ -455,10 +536,12 @@ def kmeans(k: int) -> None:
                     index = j
 
 
-            new_cluster_assign.appned((index)) #0, 1, 2
+            new_cluster_assign.append((index)) #0, 1, 2
 
 
-    plot_with_mean_points(means_x, means_y, "Final Means")
+
+
+    plot_with_mean_points(new_means_x, new_means_y, "Final Means")
 
 
 
@@ -470,5 +553,9 @@ def extra_credit() -> None:
 #hw5_p1_partc()
 #hw5_p2_parta()
 #hw5_p2_partc()
-#get_data_from_file()
+
+#test = check_if_need_to_loop([1,2,3,4], [1,2,3,4])
+
+#print(test)
+get_data_from_file()
 extra_credit()
