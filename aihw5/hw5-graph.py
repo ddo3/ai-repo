@@ -123,18 +123,11 @@ def get_prob_data_given_hypoth(candy: int, hypothesis_num: int) -> float:
             return 1
 
 def likelihood(candy_list: List, hypothesis_num: int) -> float:
-    #sum = 0.0
     prod = 1
     for candy in candy_list :
         candy_given_h = get_prob_data_given_hypoth(candy, hypothesis_num)
-        #print(np.log(candy_given_h))
-        #sum = sum + np.log(candy_given_h)
         prod = prod * candy_given_h
-    #print("--------------------------------------")
-    #print("list size = "+ str(len(candy_list)))
-    #print(sum)
 
-    #return np.exp(sum)
     return prod
 
 def posterior_prob_of_hypothesis(hypothesis_num: int , candy_list: List) -> List: #work on this
@@ -146,9 +139,6 @@ def posterior_prob_of_hypothesis(hypothesis_num: int , candy_list: List) -> List
     for i in range(0,len(candy_list)):
         temp_list = candy_list[0:i]
         likel = likelihood(temp_list, hypothesis_num)
-        #print("likelyhood = "+ str(likel))
-        #print(likel * h_prod[hypothesis_num - 1])
-
         data_given_hypoth_list.append( likel * h_prod[hypothesis_num - 1])
 
     return data_given_hypoth_list #normalize(data_given_hypoth_list, h_prod[hypothesis_num - 1])
@@ -281,10 +271,6 @@ petal_length = []
 petal_width = []
 species_data = []
 
-def print_list(data: list) -> None:
-    for item in data:
-        print(item)
-
 def get_data_from_file() -> None:
 
     with open('irisdata.csv', mode='r') as csv_file:
@@ -292,38 +278,38 @@ def get_data_from_file() -> None:
 
         for row in csv_reader:
             #
-            sepal_width.append(row['sepal_width'])
-            sepal_length.append(row['sepal_length'])
-            petal_width.append(row['petal_width'])
-            petal_length.append(row['petal_length'])
+            sepal_width.append(float(row['sepal_width']))
+            sepal_length.append(float(row['sepal_length']))
+            petal_width.append(float(row['petal_width']))
+            petal_length.append(float(row['petal_length']))
             species_data.append(row['species'])
 
-    #print_list(petal_width)
 
 def plot_cluster(cluster_x: list, cluster_y: list, cluster_assign: list, title: str) -> None:
+
     plt.figure(1)
 
     for i in range(0, len(petal_length)):
-        marker = 'o'
+        marker = 'bo'
         if(cluster_assign[i] == 0):
-            marker = 'x'
+            marker = 'rx'
         elif(cluster_assign[i] == 1):
-            marker = "v"
+            marker = "gv"
 
         x = petal_length[i]
         y = petal_width[i]
+        if(i == 0):
+            plt.plot(x , y, 'ms')
+        else:
+            plt.plot(x , y, marker)
 
-        plt.plot(x , y, marker = marker)
+    #plt.plot(petal_length, petal_width)
 
-
-    plt.plot(cluster_x, cluster_y, marker = "*")
+    plt.plot(cluster_x, cluster_y, "k*")
 
     plt.show()
 
 def distance(x1: float, y1: float, x2: float, y2: float) -> float:
-
-    #print(type(x1))
-    #print(type(x2))
     term1 = np.power(x2 - x1, 2)
     term2 = np.power(y2 - y1, 2)
 
@@ -347,17 +333,17 @@ def plot_with_mean_points(mean_x: list, mean_y: list, title: str) -> None:
 def check_if_need_to_loop(cluster_assign_1: list, cluster_assign_2: list) -> bool:
     for i in range(0, len(cluster_assign_1)):
         if(cluster_assign_1[i] != cluster_assign_2[i]):
-            print(cluster_assign_1[i])
-            print(cluster_assign_2[i])
             return True
 
     return False
 
 
 #SOMEHOW this method is failing
-#or my placement is just wrong 
+#or my placement is just wrong
 def update_cluster_mean( mean_list: list, data_list: list, cluster_assign_list: list) -> List:
-
+    print("***** CLUSTER ASSIGN LIST *****")
+    print(cluster_assign_list)
+    #print(len(cluster_assign_list))
     new_mean_list = []
 
     for i in range(0, len(mean_list)):
@@ -373,6 +359,116 @@ def update_cluster_mean( mean_list: list, data_list: list, cluster_assign_list: 
 
 
     return new_mean_list
+
+def get_distances_from_clusters(cluster_x: list, cluster_y: list ) -> dict:
+    distances_from_clusters = {}
+
+    for i in range(0, len(cluster_x)): #0, 1, 2
+        distance_list = []
+        x2 = float(cluster_x[i])
+        y2 = float(cluster_y[i])
+
+        for j in range(0,len(petal_length)):
+            x1 = float(petal_length[j])
+            y1 = float(petal_width[j])
+
+            dist = distance(x1, y1, x2 ,y2)
+            distance_list.append(dist)
+
+        distances_from_clusters[i] = distance_list
+
+    return distances_from_clusters
+
+def assign_data_to_cluster(distances_from_clusters: dict) -> List:
+    cluster_assign = []
+    for i in range(0, len(petal_length)):
+        cluster_distances_for_i = []
+
+        #get the distances for this point
+        for key in distances_from_clusters:
+            dist_list = distances_from_clusters[key]
+            cluster_distances_for_i.append( dist_list[i] )
+
+        index = 0
+        min = cluster_distances_for_i[0]
+
+        for j in range(0, len(cluster_distances_for_i)):
+            if(i == 0):
+                print("distance %f from cluster %d",cluster_distances_for_i[j], j)
+
+            if cluster_distances_for_i[j] < min:
+                min = cluster_distances_for_i[j]
+                index = j
+
+
+        cluster_assign.append((index)) #0, 1, 2
+
+    return cluster_assign
+
+def are_values_in_list_same(l1: list, l2:list ) -> bool:
+    for i in range(0, len(l1)):
+        if(l1[i] != l2[i]):
+            return False
+
+    return True
+
+g_x = []
+g_y = []
+
+def kmeans_2(k : int) -> None:
+    init_means_x = [] #length
+    init_means_y = [] #width
+
+    #select k points at random
+    for i in range(0, k):
+        rand = random.randint(1,len(petal_length))
+
+        init_means_x.append(float(petal_length[rand]))
+        init_means_y.append(float(petal_width[rand]))
+
+    #PLOT These points
+    print("####################  INITIAL  ###############################")
+    print(init_means_x)
+    print(init_means_y)
+    plot_with_mean_points(init_means_x, init_means_y, "Initial Means")
+
+    #Calculate the distance between each data point and cluster centers.
+    distances_from_clusters = get_distances_from_clusters(init_means_x, init_means_y)
+
+    #assign each point to a cluster based on distance from cluster
+    cluster_assign = assign_data_to_cluster(distances_from_clusters)
+
+    #recalcualte new clusters (update x mean and y_mean)
+    updated_means_x = update_cluster_mean(init_means_x, petal_length, cluster_assign)
+    updated_means_y = update_cluster_mean(init_means_y, petal_width, cluster_assign)
+
+    #plot_with_mean_points(updated_means_x, updated_means_y, "Initial Means")
+
+    g_x = init_means_x
+    g_y = init_means_y
+    plot_cluster(updated_means_x, updated_means_y, cluster_assign, "title")
+    # while the updated mean and the global mean are not the same
+    print("###################################################")
+    while(not are_values_in_list_same(g_x, updated_means_x)):
+        print("Updated Means")
+        print(updated_means_x)
+        print(updated_means_y)
+
+        g_x = updated_means_x
+        g_y = updated_means_y
+
+        #Calculate the distance between each data point and cluster centers.
+        distances_from_clusters = get_distances_from_clusters(updated_means_x, updated_means_x)
+
+        #assign each point to a cluster based on distance from cluster
+        cluster_assign = assign_data_to_cluster(distances_from_clusters)
+
+        #recalcualte new clusters (update x mean and y_mean)
+        updated_means_x = update_cluster_mean(updated_means_x, petal_length, cluster_assign)
+        updated_means_y = update_cluster_mean(updated_means_x, petal_width, cluster_assign)
+
+
+    plot_with_mean_points(updated_means_x, updated_means_y, "Final")
 
 
 #TODO something is wrong the means are never changing!!!
@@ -473,16 +569,12 @@ def kmeans(k: int) -> None:
     #
     count = 0
 
-    #print("### Old cluster ###")
-    #print(old_cluster_assign)
-    #print("### new cluster ###")
-    #print(new_cluster_assign)
+
     old_cluster_assign = cluster_assign
     old_mean_x = init_means_x
     old_means_y = init_means_y
 
-    #print(old_cluster_assign)
-    #print(new_cluster_assign)
+
 
     while(check_if_need_to_loop(new_means_x, old_mean_x)):
     #while(check_if_need_to_loop(new_cluster_assign, old_cluster_assign)):
@@ -491,7 +583,7 @@ def kmeans(k: int) -> None:
         old_means_y = new_means_y
 
 
-        #print(count)
+
         if(count % 100 == 0):
             plot_with_mean_points(new_means_x, new_means_y, "test Means")
         count = count + 1
@@ -546,16 +638,15 @@ def kmeans(k: int) -> None:
 
 
 def extra_credit() -> None:
-    kmeans(2)
+    get_data_from_file()
+    #kmeans_2(3)
+    kmeans_2(2)
     #kmeans(3)
 
 ##################################################################################################################
+#hw5_p1_partb()
 #hw5_p1_partc()
 #hw5_p2_parta()
 #hw5_p2_partc()
 
-#test = check_if_need_to_loop([1,2,3,4], [1,2,3,4])
-
-#print(test)
-get_data_from_file()
 extra_credit()
