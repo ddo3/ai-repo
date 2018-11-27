@@ -23,70 +23,54 @@ def get_data_from_file() -> None:
             petal_length.append(float(row['petal_length']))
             species_data.append(row['species'])
 
-#Euclidian Distance between two d-dimensional points
-def eucldist(p0,p1):
-    dist = 0.0
-    for i in range(0,len(p0)):
-        dist += (p0[i] - p1[i])**2
-    return math.sqrt(dist)
 
-#K-Means Algorithm
-def kmeans(k,datapoints):
+def distance(l0 : list, l1: list) -> float:
+    d = 0.0
+    for i in range(0,len(l0)):
+        d += (l0[i] - l1[i])**2
+    return math.sqrt(d)
 
-    # d - Dimensionality of Datapoints
+def kmeans(k: int, datapoints: list):
+
     d = len(datapoints[0])
-
-    #Limit our iterations
-    Max_Iterations = 1000
+    max_iter = 1000
     i = 0
 
-    cluster = [0] * len(datapoints)
+    cluster_assign = [0] * len(datapoints)
     prev_cluster = [-1] * len(datapoints)
+    centers = []
 
-    #Randomly Choose Centers for the Clusters
-    cluster_centers = []
     for i in range(0,k):
         new_cluster = []
-        #for i in range(0,d):
-        #    new_cluster += [random.randint(0,10)]
-        cluster_centers += [random.choice(datapoints)]
+        centers += [random.choice(datapoints)]
+        recalculation = False
 
-
-        #Sometimes The Random points are chosen poorly and so there ends up being empty clusters
-        #In this particular implementation we want to force K exact clusters.
-        #To take this feature off, simply take away "force_recalculation" from the while conditional.
-        force_recalculation = False
-
-    print(cluster_centers)
-
-    plot_cluster(cluster_centers, datapoints, cluster, 'Initial Means')
+    plot_cluster(centers, datapoints, cluster_assign, 'Initial Means')
     count = 0
-    while (cluster != prev_cluster) or (i > Max_Iterations) or (force_recalculation) :
+    while (cluster_assign != prev_cluster) or (i > max_iter) or (recalculation) :
 
-        prev_cluster = list(cluster)
-        force_recalculation = False
+        prev_cluster = list(cluster_assign)
+        recalculation = False
         i += 1
 
-        #Update Point's Cluster Alligiance
+
         for p in range(0,len(datapoints)):
             min_dist = float("inf")
 
-            #Check min_distance against all centers
-            for c in range(0,len(cluster_centers)):
 
-                dist = eucldist(datapoints[p],cluster_centers[c])
+            for c in range(0,len(centers)):
+
+                dist = distance(datapoints[p],centers[c])
 
                 if (dist < min_dist):
                     min_dist = dist
-                    cluster[p] = c   # Reassign Point to new Cluster
+                    cluster_assign[p] = c
 
-
-        #Update Cluster's Position
-        for k in range(0,len(cluster_centers)):
+        for k in range(0,len(centers)):
             new_center = [0] * d
             members = 0
             for p in range(0,len(datapoints)):
-                if (cluster[p] == k): #If this point belongs to the cluster
+                if (cluster_assign[p] == k):
                     for j in range(0,d):
                         new_center[j] += datapoints[p][j]
                     members += 1
@@ -94,31 +78,22 @@ def kmeans(k,datapoints):
             for j in range(0,d):
                 if members != 0:
                     new_center[j] = new_center[j] / float(members)
-
-                #This means that our initial random assignment was poorly chosen
-                #Change it to a new datapoint to actually force k clusters
                 else:
                     new_center = random.choice(datapoints)
-                    force_recalculation = True
-                    print("Forced Recalculation...")
+                    recalculation = True
 
 
-            cluster_centers[k] = new_center
+            centers[k] = new_center
 
             if(k == 2):
                 if(count == 4):
-                    plot_cluster(cluster_centers, datapoints, cluster, 'Middle Means')
+                    plot_cluster(centers, datapoints, cluster_assign, 'Middle Means')
             else:
                 if(count == 5):
-                    plot_cluster(cluster_centers, datapoints, cluster, 'Middle Means')
+                    plot_cluster(centers, datapoints, cluster_assign, 'Middle Means')
 
         count = count + 1
-    plot_cluster(cluster_centers, datapoints, cluster, 'Final Means')
-
-    #print("======== Results ========")
-    #print("Clusters", cluster_centers)
-    #print("Iterations",i)
-    #print("Assignments", cluster)
+    plot_cluster(centers, datapoints, cluster_assign, 'Final Means')
 
 def plot_with_mean_points(mean_x: list, mean_y: list, title: str) -> None:
 
@@ -151,7 +126,6 @@ def plot_cluster(clusters: list, data_list: list, cluster_assign: list, title: s
         else:
             plt.plot(x , y, marker)
 
-    #plt.plot(petal_length, petal_width)
     for data in clusters:
         x = data[0]
         y = data[1]
@@ -159,10 +133,7 @@ def plot_cluster(clusters: list, data_list: list, cluster_assign: list, title: s
 
     plt.show()
 
-#TESTING THE PROGRAM#
-if __name__ == "__main__":
-    #2D - Datapoints List of n d-dimensional vectors. (For this example I already set up 2D Tuples)
-    #Feel free to change to whatever size tuples you want...
+def run():
     get_data_from_file()
     datapoints = []
 
@@ -175,3 +146,6 @@ if __name__ == "__main__":
     kmeans(2,datapoints)
 
     kmeans(3,datapoints)
+
+
+run()
