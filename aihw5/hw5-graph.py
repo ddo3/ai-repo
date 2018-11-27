@@ -32,7 +32,7 @@ def posterior_dist_theta(thetas: list, num_of_trials: int, num_of_heads: int) ->
     posterior = []
 
     for theta in thetas:
-        n_choose_y = comb(num_of_trials, num_of_trials)
+        n_choose_y = comb(num_of_trials, num_of_heads)
         sec_term = pow(theta, num_of_heads)
         third_term = pow((1-theta), (num_of_trials - num_of_heads))
 
@@ -649,4 +649,4 @@ def extra_credit() -> None:
 #hw5_p2_parta()
 #hw5_p2_partc()
 
-extra_credit()
+#extra_credit()
