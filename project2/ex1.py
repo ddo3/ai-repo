@@ -244,10 +244,6 @@ def p1partC() -> None: #DONE
 
     plt.plot(species1_x, species1_y,'o', species2_x, species2_y, 'x')
 
-    #weights
-    w0 = .12
-    w1 = -.36
-
     x_val = []
     x_val.extend(species2_x)
     x_val.extend(species1_x)
@@ -300,12 +296,7 @@ def p1partD() -> None: #DONE
     y = np.array(y)
     z = np.array(z)
 
-
     surf = ax.plot_trisurf(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    # Customize the z axis.
-    #ax.set_zlim(-1.01, 1.01)
-    #ax.zaxis.set_major_locator(LinearLocator(10))
-    #ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
     fig.colorbar(surf, shrink=0.5, aspect=5)
     plt.show()
@@ -366,7 +357,6 @@ get_data_from_file()
 
 #p1partA()
 #p1partB()
-#p1partC() # line doesnt look right
+#p1partC()
 #p1partD()
 #p1partE()
-s
