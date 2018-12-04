@@ -28,7 +28,10 @@ def get_data_from_file() -> None: #DONE
 #def p3partA() -> None:
 #def p3partB() -> None:
 #def p3partC() -> None:
-#def p3partD() -> None:
-#def p3partE() -> None:
 
 get_data_from_file()
+
+
+#p3partA()
+#p3partB()
+#p3partC()

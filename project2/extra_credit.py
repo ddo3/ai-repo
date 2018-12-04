@@ -87,11 +87,12 @@ def pytorch_version() -> None: # not working
         # save the predicted value
         pred[idx] = model(attributes).round()
 
-    v1 = sum(pred == torch.tensor(torch.FloatTensor(out_vec.values)))
+    #v1 = sum(pred == torch.tensor(torch.FloatTensor(out_vec.values)))
 
-    p_val = 'Correct classifications: {}/{}'.format(v1)
+    #'Correct classifications: {}/{}'.format(v1)
 
-    print(p_val)
+    #print(p_val)
+    print('Correct classifications: {}/{}'.format(sum(pred == torch.tensor(out_vec.values).float()),len(out_vec)))
 
 pytorch_version()
 ### VERSION 2 #####################
@@ -136,3 +137,4 @@ def keras_version() -> None:
 
     model = modelNN()
     model.fit(x=inputTrain,y=outputTrain,epochs=2000, validation_data=(inputVal,outputVal))
+1.030353 0.9232535
