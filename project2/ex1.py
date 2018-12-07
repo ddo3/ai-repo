@@ -4,6 +4,7 @@ import numpy as np
 from typing import List, Tuple
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+import sys
 
 #'sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species'
 petal_length_all = []
@@ -46,6 +47,10 @@ def get_data_from_file() -> None: #DONE
                 virginica_length.append(petal_length[i])
                 virginica_width.append(petal_width[i])
                 class_list.append(1)
+
+def sigmoid(z: float):
+    return 1/(1 + np.exp(-1 * z))
+
 ###############################################
 
 def p1partA() -> None: #DONE
@@ -58,82 +63,6 @@ def p1partA() -> None: #DONE
     plt.show()
 
 ##############################################
-def not_important() -> None:
-    '''
-    def sum_list(data: list) -> float:
-        sum = 0
-        for d in data:
-            sum = sum + d
-
-        return sum
-
-    def mult_and_sum_lists(l1: list, l2: list) -> float:
-        sum = 0
-
-        for i in range(0, len(l1)):
-            sum = ( l1[i] * l2[i] ) + sum
-
-        return sum
-
-    def get_w1(x_list: list, y_list: list) -> float:
-        N = len(x_list)
-
-        sum_x = sum_list(x_list)
-        sum_y = sum_list(y_list)
-        sum_x_and_y = mult_and_sum_lists(x_list, y_list)
-        sum_x_squared = mult_and_sum_lists(x_list, x_list)
-
-        top = (N * sum_x_and_y) - (sum_x * sum_y)
-
-        bottom = (N * sum_x_squared ) - sum_x**2
-
-        return top / bottom
-
-    def get_w0(x_list: list, y_list: list, w1: float) -> float:
-        N = len(x_list)
-
-        sum_x = sum_list(x_list)
-        sum_y = sum_list(y_list)
-
-        return (sum_y - (w1 * sum_x))/N
-
-    def get_linear_regression_list(x_list: list, y_list: list) -> list:
-        datapoints = []
-
-        w1 = get_w1(x_list, y_list)
-        w0 = get_w0(x_list, y_list, w1)
-
-        for x in x_list:
-            y = (w1 * x) + w0
-            datapoints.append( (x,y) )
-
-        return datapoints
-
-    def my_dumb_ass() -> None:
-        datapoints = get_linear_regression_list(petal_length, petal_width)
-        #print(datapoints)
-        plt.figure(1)
-
-        plt.plot(petal_length, petal_width,'o')
-
-        x_list = []
-        y_list = []
-
-        for point in datapoints:
-            x_list.append(point[0])
-            y_list.append(point[1])
-
-        plt.plot(x_list, y_list, 'k')
-
-        plt.xlabel('Petal Length')
-        plt.ylabel('Petal Width')
-
-        plt.show()
-    '''
-#####################################################
-
-def sigmoid(z: float):
-    return 1/(1 + np.exp(-1 * z))
 
 def h_function(w_list: list, x_list: list) -> float:
     z = np.dot(w_list, x_list)
@@ -162,11 +91,11 @@ def p1partB(datapoint: tuple) -> int: #DONE
 
 ###############################################
 
-def p1partC() -> None: #DONE
+def p1partC(weights: list) -> None: #DONE
 
     plt.figure(1)
 
-    weights = [-4,.5, .9] # bias, w0, w1
+    #weights = [-4,.5, .9] # bias, w0, w1
     #weights = [-3,.5, .9]
 
     plt.plot(versicolor_length, versicolor_width,'o', virginica_length, virginica_width, 'x')
@@ -270,12 +199,37 @@ def p1partE() -> None: #DONE
     plt.gca().legend(('virginica', 'versicolor'))
     plt.show()
 
+def main():
+    get_data_from_file()
 
+    cmd = sys.argv[1]
 
-get_data_from_file()
+    if cmd == 'partA':
+        print("Exercise 1: PartA")
+        p1partA()
 
-#p1partA()
-#p1partB()
-p1partC()
-#p1partD()
-#p1partE()
+    elif cmd == 'partB':
+        print("Exercise 1: PartB")
+        datapoint = (petal_length_all[70], petal_width_all[70])
+        print("Testing with point "+ str(datapoint))
+        print("Returned Value is " + str(p1partB(datapoint)))
+
+    elif cmd == 'partC':
+        print("Exercise 1: PartC")
+        w2 = [-4,.5, .9]
+        print("Uisng weights = " + str(w2))
+        p1partC(w2)
+
+    elif cmd == 'partD':
+        print("Exercise 1: PartD")
+        p1partD()
+
+    elif cmd == 'partE':
+        print("Exercise 1: PartE")
+        p1partE()
+
+    else:
+        print('That is an invalid command')
+
+if __name__ == "__main__":
+    main()

@@ -4,6 +4,7 @@ import numpy as np
 from typing import List, Tuple
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+import sys
 
 petal_length = []
 petal_width = []
@@ -107,7 +108,7 @@ def p2partB() -> None: #DONE
 
 ################################################
 
-def plot_for_partE(weight1: list, weight2: list):
+def plot_for_partE(weight1: list, weight2: list) -> None:
 
     x = []
     y1 = []
@@ -141,11 +142,7 @@ def plot_for_partE(weight1: list, weight2: list):
 
     plt.show()
 
-def p2partE(start_index: int, end_index: int) -> None:
-    #bad weight
-    #plot before update
-    weight = [-3,.5, .9]
-    #weight = [-4,.5, .9]
+def p2partE(start_index: int, end_index: int, epsilon: float, weight: list) -> List:
 
     sum_b = 0
     sum_x = 0
@@ -172,27 +169,50 @@ def p2partE(start_index: int, end_index: int) -> None:
 
     n = (end_index - start_index + 1)
 
-    print("#### SUMS ####")
 
-    print((sum_b, sum_x, sum_y))
 
-    b_change = sum_b/n
-    w0_change = sum_x/n
-    w1_change = sum_y/n
+    b_change = (sum_b/n) * epsilon
+    w0_change = (sum_x/n) * epsilon
+    w1_change = (sum_y/n) * epsilon
 
-    print((b_change, w0_change, w1_change))
+
 
     new_w = [weight[0] - b_change, weight[1] - w0_change , weight[2] - w1_change]
 
-    print(new_w)
-
-    #plot weights after update
-    plot_for_partE(weight, new_w)
+    return new_w
 
 ################################################
+def main():
+    get_data_from_file()
 
-get_data_from_file()
-w = [-4,.5, .9]
-#p2partA()
-#p2partB()
-#p2partE(0,97)
+    cmd = sys.argv[1]
+    w1 = [-4,.5, .9]
+
+    if cmd == 'partA':
+        print("Exercise 2: PartA")
+        print("Uisng weights = " + str(w1))
+        val = p2partA(petal_length, petal_width, w1, class_list)
+        print("Mean Squared Error = " + str(val))
+
+    elif cmd == 'partB':
+        print("Exercise 2: PartB")
+        p2partB()
+
+    elif cmd == 'partE':
+        w = [-3,.5, .9]
+
+        print("Exercise 2: PartE")
+        print("The range is datapoint 0 to datapoint 99")
+        print("The stepsize is .1")
+        print("The weights used are " + str(w))
+
+
+        new_w = p2partE(0,99, .1, w)
+        print("Updated weights are " + str(new_w))
+        plot_for_partE(w, new_w)
+
+    else:
+        print('That is an invalid command')
+
+if __name__ == "__main__":
+    main()

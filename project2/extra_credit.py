@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import sys
 
 import numpy
 import pandas
@@ -15,7 +16,8 @@ from sklearn.model_selection import train_test_split
 
 ### VERSION 1 pythorch #####################
 
-def pytorch_version() -> None: # not working
+def pytorch_version() -> None:
+
     dataframe = pd.read_csv('./irisdata.csv')
     two_class = dataframe[dataframe['species'] != 'setosa']
 
@@ -87,20 +89,14 @@ def pytorch_version() -> None: # not working
         # save the predicted value
         pred[idx] = model(attributes).round()
 
-    #v1 = sum(pred == torch.tensor(torch.FloatTensor(out_vec.values)))
-
-    #'Correct classifications: {}/{}'.format(v1)
-
-    #print(p_val)
     print('Correct classifications: {}/{}'.format(sum(pred == torch.tensor(out_vec.values).float()),len(out_vec)))
 
-pytorch_version()
 ### VERSION 2 #####################
 
 def keras_version() -> None:
     #load the data
     dataBase = pandas.read_csv("irisdata.csv",header=None)
-    dataSet = dataBase.values
+    dataSet = dataBase.values # returns a numpy n dimensional array
     Input = dataSet[51:,2:4].astype(float)
     Output = dataSet[51:,4]
 
@@ -137,4 +133,82 @@ def keras_version() -> None:
 
     model = modelNN()
     model.fit(x=inputTrain,y=outputTrain,epochs=2000, validation_data=(inputVal,outputVal))
-1.030353 0.9232535
+
+
+######### PART 2 ##############################
+def part2_keras() -> None:
+    dataBase = pandas.read_csv("irisdata.csv",header=None)
+    dataSet = dataBase.values # returns a numpy n dimensional array
+    Input = dataSet[1:,0:4].astype(float) # this geats all the data
+    Output = dataSet[1:,4]
+
+    encodeOutput = []
+    for i in Output:
+        if i == 'setosa':
+            encodeOutput.append(0)
+        elif i == 'versicolor':
+            encodeOutput.append(1)
+        else:
+            encodeOutput.append(2)
+
+    def plot_data() -> None:
+
+        plt.subplot(1,2,1)
+        plt.scatter(Input[0:50,0],Input[0:50,1],c='k',label='Setosa_sepal')
+        plt.scatter(Input[50:100,0],Input[50:100,1],c='b',label='Versicolor_sepal')
+        plt.scatter(Input[100:150,0],Input[100:150,1],c='r',label='Virginica_sepal')
+        plt.xlabel('Sepal Length')
+        plt.ylabel('Sepal Width')
+        plt.legend(loc='upper left')
+
+        plt.subplot(1,2,2)
+        plt.scatter(Input[0:50,2],Input[0:50,3],c='k', marker='v',label='Setosa_petal')
+        plt.scatter(Input[50:100,2],Input[50:100,3],c='b',marker='v' ,label='Versicolor_petal')
+        plt.scatter(Input[100:150,2],Input[100:150,3],c='r', marker='v',label='Virginica_petal')
+
+        plt.xlabel('Petal Length')
+        plt.ylabel('Petal Width')
+        plt.legend(loc='upper left')
+
+
+        plt.show()
+
+    #plot_data()
+
+    inputTrain,inputVal,outputTrain,outputVal = train_test_split(Input,encodeOutput,test_size=0.25,shuffle=True)
+
+    def modelNN():
+        model = Sequential()
+        model.add(Dense(1,input_dim=4,activation='sigmoid'))
+        model.compile(optimizer='rmsprop',loss='mean_squared_error',metrics=['accuracy'])
+        return model
+
+
+    model = modelNN()
+    model.fit(x=inputTrain,y=outputTrain,epochs=2000, validation_data=(inputVal,outputVal))
+
+def main():
+
+    cmd = sys.argv[1]
+
+    if cmd == 'partA':
+        print("Extra Credit: PartA")
+
+        print("Pytorch Version")
+        print("######################################################################")
+        pytorch_version()
+
+
+        print("Keras Version")
+        print("######################################################################")
+        keras_version()
+
+    elif cmd == 'partB':
+        print("Extra Credit: PartB")
+        part2_keras()
+
+    else:
+        print('That is an invalid command')
+
+if __name__ == "__main__":
+    main()
