@@ -10,7 +10,6 @@ import random
 petal_length_all = []
 petal_width_all = []
 
-
 petal_length = []
 petal_width = []
 species_data = []
@@ -59,7 +58,7 @@ def mean_square_error(x_data: list, y_data: list, weights: list, data_class: lis
 
     for i in range(0, len(x_data)):
         x = x_data[i]
-        y = x_data[i]
+        y = y_data[i]
 
         z = np.dot(weights, [1, x, y])
 
@@ -108,19 +107,15 @@ def gradient(start_index: int, end_index: int, epsilon: float, weight: list) -> 
 
     return new_w
 
-def plot(weight1: list, title: str) -> None:#, weight2: list):
+def plot(weight1: list, title: str) -> None:
 
     x = []
     y1 = []
-    #y2 = []
 
     for x_data in petal_length:
 
         y_data1 = -1 *((weight1[1] * x_data) + weight1[0])/weight1[2]
-        #y_data2 = -1 *((weight2[1] * x_data) + weight2[0])/weight2[2]
-
         y1.append(y_data1)
-        #y2.append(y_data2)
         x.append(x_data)
 
     plt.figure(1)
@@ -166,7 +161,7 @@ def p3partA(weights: list, epsilon: float, needs_middle_plot: bool ) -> None:
     y_list = []
 
     #while the mean_square_errors are not within a certain bounds of each other
-    while(diff > .000001):
+    while(diff > .000009):
     #   set new_weigths as old weights
         old_weights = new_weights
 
@@ -192,7 +187,7 @@ def p3partA(weights: list, epsilon: float, needs_middle_plot: bool ) -> None:
             #print("New mse = " + str(new_mse))
             #print("Diff = " + str(diff))
 
-        if count == 900 & needs_middle_plot:
+        if (count == 900) and needs_middle_plot:
             plot(new_weights, "Middle Of Learning")
 
     plot(new_weights, "After Learning")

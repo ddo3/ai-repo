@@ -53,7 +53,7 @@ def p2partA(x_data: list, y_data: list, weights: list, data_class: list) -> floa
 
     for i in range(0, len(x_data)):
         x = x_data[i]
-        y = x_data[i]
+        y = y_data[i]
 
         z = np.dot(weights, [1, x, y])
 
